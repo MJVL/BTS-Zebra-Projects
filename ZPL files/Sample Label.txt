@@ -1,0 +1,4 @@
+^XA
+^FO100,75^XGE:zebra.bmp^FS
+^FO100,475^A0N,50,50^FDMirror from USB Completed^FS
+^XZ

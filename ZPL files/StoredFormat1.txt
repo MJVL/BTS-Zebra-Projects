@@ -1,0 +1,6 @@
+^XA
+^DFR:Filename.ZPL^FS 
+^FO25,25^A0N,50,50^FDZebra Printer^FS
+^FO25,75^A0N,50,50^FDSerial Number^FS
+^FO25,150^A0N,50,50^FN1^FS
+^XZ
