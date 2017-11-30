@@ -1,0 +1,56 @@
+1 rem **************************************************************************
+1 rem Zebra Technologies ZBI Sample Program
+1 rem
+1 rem Professional programming services are available. Please contact
+1 rem ZBI-Experts@zebra.com for more information.
+1 rem
+1 rem This is an example of using arrays to store and use data within ZBI.
+1 rem **************************************************************************
+1 rem close all ports except for the console
+1 rem **************************************************************************
+10 for i = 1 to 9 step 1
+20    close #i
+30    next i  
+1 rem **************************************************************************
+1 rem open a port to the print engine
+1 rem ************************************************************************** 
+40 open #1: name "ZPL"  
+1 rem **************************************************************************
+1 rem create string arrays five elements in size to hold names and addresses
+1 rem **************************************************************************                                        
+50 declare string name$(5)           
+60 declare string address$(5) 
+1 rem **************************************************************************
+1 rem infinite loop to put name and address data from console into arrays
+1 rem **************************************************************************       
+70 do                           
+80 for i = 1 to 5 step 1            
+90    print "PLEASE ENTER THE NAME"  
+1 rem **************************************************************************
+1 rem get data from console; input command looks for CRLF
+1 rem **************************************************************************      
+100    input name$(i)   
+1 rem **************************************************************************
+1 rem if the user inputs end or END, the program will end
+1 rem **************************************************************************                     
+110    if name$(i) = "END" or name$(i) = "end" then 
+120       end
+130    end if
+140    print "PLEASE ENTER THE ADDRESS"     
+150    input address$(i)   
+160    if address$(i) = "END" or address$(i) = "end" then 
+170       end
+180    end if
+190 next i
+200 for index = 1 to 5 step 1    
+1 rem **************************************************************************
+1 rem semicolon at the end prints with no CRLF
+1 rem **************************************************************************                                                                                                                                                       ! For loop To Print data no label
+210    print #1: "^XA^FO30,30^A0N,30,30^FD"&NAME$(INDEX)&"^FS";  
+1 rem **************************************************************************
+1 rem ampersand used to concatenate data into strings
+1 rem ************************************************************************** 
+220    print #1: "^FO30,70^A0N,30,30^FD"&ADDRESS$(INDEX)&"^FS^XZ"    
+230 next index
+240 loop ! loops back To Line 60
+250 end

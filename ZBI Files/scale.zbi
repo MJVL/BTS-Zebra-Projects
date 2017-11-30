@@ -1,0 +1,54 @@
+1 rem **************************************************************************
+1 rem Zebra Technologies ZBI Sample Program
+1 rem 
+1 rem Professional programming services are available. Please contact
+1 rem ZBI-Experts@zebra.com for more information.
+1 rem
+1 rem This is an example of using ZBI to read scale data from the serial port.
+1 rem **************************************************************************
+1 rem close all ports except console, open channels to parallel and serial ports
+1 rem **************************************************************************
+05 for i = 1 to 9 step 1
+10    close #i
+20    next i
+30 open # 2 : name "SER"
+40 open # 1 : name "ZPL"
+1 rem **************************************************************************
+1 rem main program; send serial port a 'W' in order to get a weight
+1 rem **************************************************************************
+50 do
+60    do
+70       sleep 1   ! sleep so scale is not bombarded with incoming data
+80       print # 2 : "W" ;   ! semicolon ends sent W without a CRLF
+1 rem **************************************************************************
+1 rem get response from scale; note that input requires a CRLF to be entered
+1 rem **************************************************************************
+90       input # 2 : a$
+100       if a$ = "EXIT" then	! back door exit - if EXIT is recieved, ZBI ends
+110          close # 2
+120          print #1: "^XZ"
+130          close #1
+140          end
+150       end if
+1 rem **************************************************************************
+1 rem loop until valid weight is received, then print on label
+1 rem **************************************************************************
+160    loop while pos ( a$ , "000.00" ) = 1 or pos ( a$ , "?" ) = 1	
+170    print # 1 : "~SD25^XA^FS";
+180    print # 1 : "^LH0,0^FS";
+190    print # 1 : "^FO56,47^A0N,69,58^FDThis weighs^FS";
+1 rem **************************************************************************
+1 rem print weight on label; & character concatenates strings
+1 rem **************************************************************************
+200    print # 1 : "^FO56,150^A0N,69,58^FD" & A$ & " lbs^FS";
+210    print # 1 : "^PQ1,0,0,N";
+220    print # 1 : "^XZ"
+1 rem **************************************************************************
+1 rem loop until weight is off scale, then repeat for next item weighed
+1 rem **************************************************************************
+230    do
+240       print # 2 : "W" ;
+250       input # 2 : A$
+260    loop until pos(A$ , "000.00") = 1 or pos(A$ , "?") = 1
+270 loop
+

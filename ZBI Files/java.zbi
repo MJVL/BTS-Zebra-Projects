@@ -1,0 +1,74 @@
+1 rem **************************************************************************
+1 rem Zebra Technologies ZBI Sample Program
+1 rem 
+1 rem Professional programming services are available. Please contact
+1 rem ZBI-Experts@zebra.com for more information.
+1 rem
+1 rem This sample ZBI program gets data from a scanner over a serial port and 
+1 rem then retrieves information about the scanned item from a mySQL database.
+1 rem **************************************************************************
+1 rem use autonum to generate line numbers
+1 rem **************************************************************************
+AUTONUM 1,1
+1 rem **************************************************************************
+1 rem close all ports, open channel to serial port
+1 rem **************************************************************************
+CLOSE ALL
+OPEN #1: NAME "SER"
+SUB SCANBARCODE
+1 rem **************************************************************************
+1 rem connect to database via TCP
+1 rem **************************************************************************
+LET TCPClient = CLIENTSOCKET("TCP","10.3.4.68",9100)
+LET A = SETVAR("device.frontpanel.line1", "SCAN NAME")
+LET B = SETVAR("device.frontpanel.line2", " ")
+INPUT #1: SCANNEDSTRING$
+DECLARE STRING NAMEARRAY$(2)
+LET C = SPLIT( NAMEARRAY$, SCANNEDSTRING$, " ", 2 )
+PRINT NAMEARRAY$(1)
+PRINT NAMEARRAY$(2)
+1 rem **************************************************************************
+1 rem get information from database
+1 rem **************************************************************************
+IF (TCPClient > 0) THEN
+	LET SQLSTRING$ = "";
+	LET SQLSTRING$ = SQLSTRING$ & "SEND_SQL_QUERY(";
+	LET SQLSTRING$ = SQLSTRING$ &  "SELECT sakila.film.title ";
+	LET SQLSTRING$ = SQLSTRING$ &  "FROM sakila.film, sakila.film_actor, sakila.actor ";
+	LET SQLSTRING$ = SQLSTRING$ &  "WHERE sakila.film.film_id=sakila.film_actor.film_id ";
+	LET SQLSTRING$ = SQLSTRING$ &  "AND sakila.film_actor.actor_id = sakila.actor.actor_id ";
+	LET SQLSTRING$ = SQLSTRING$ &  "AND sakila.actor.first_name = """ & NAMEARRAY$(1) & """ ";
+	LET SQLSTRING$ = SQLSTRING$ &  "AND sakila.actor.last_name = """ & NAMEARRAY$(2) & """ ";
+	LET SQLSTRING$ = SQLSTRING$ &  ")<EOT>";
+	LET SQLSTRING$ = SQLSTRING$ &  CHR$(4);
+	PRINT #TCPClient: SQLSTRING$
+	PRINT "RESPONSE_GET_NUM_ROWS()<EOT>"
+	PRINT #TCPClient: "RESPONSE_GET_NUM_ROWS()<EOT>" & CHR$(4);
+	INPUT #TCPClient : numrows$
+	PRINT numrows$
+1 rem **************************************************************************
+1 rem open channel to ZPL port, write ZPL containing data
+1 rem **************************************************************************
+	OPEN #2: NAME "ZPL"
+	LET FONT$ = "^A0N,30,30"
+	LET A = SETVAR("device.frontpanel.line1", "PRINTING...")
+	PRINT #2: "^XA^FO100,50^A0N,50,50^FDFilms by " & NAMEARRAY$(1) & " " & NAMEARRAY$(2) & ":^FS";
+	PRINT #TCPClient: "RESPONSE_GET_ALL_ROWS()<EOT>" & CHR$(4);
+	FOR i = 1 to VAL(numrows$)
+		LET FILMINFO$ = ""
+		INPUT #TCPClient: FILMINFO$
+		LET TITLE$ = EXTRACT$(FILMINFO$, "{title=", "}")
+		PRINT STR$(i) & ": " & TITLE$
+		LET ZPLSTRING$ = "^FD^FO200," & STR$(100+i*30) & FONT$ & "^FD" & TITLE$ & "^FS"
+		PRINT ZPLSTRING$
+		PRINT #2: ZPLSTRING$;
+	NEXT i
+	PRINT #2: "^XZ"
+	CLOSE #2
+END IF
+PRINT TCPClient
+PRINT #TCPClient: "DISCONNECT()<EOT>"
+PRINT "DISCONNECT()<EOT>"
+PRINT #TCPClient: CHR$(4);
+CLOSE #TCPClient
+GOTO SCANBARCODE

@@ -1,0 +1,3 @@
+! U1 setvar "power.inactivity_timeout" "0"
+! U1 setvar "power.low_battery_timeout" "60"
+! U1 do "device.reset" ""

@@ -1,0 +1,31 @@
+1 rem **************************************************************************
+1 rem Zebra Technologies ZBI Sample Program
+1 rem 
+1 rem Professional programming services are available. Please contact
+1 rem ZBI-Experts@zebra.com for more information.
+1 rem
+1 rem This is an example of using a socket to take in data from the TCP/IP port
+1 rem and reprint it to the console. This is useful for troubleshooting many
+1 rem applications.
+1 rem **************************************************************************
+10 for i = 1 to 9
+20    close #(i)
+30 next i
+40 let a = serverclose(99)
+50 open #1: name "ZPL"
+60 let iserver = serversocket("TCP")
+70 on error goto 60
+80 let tcport = accept(iserver)
+90 on error goto 210
+100 inbyte #tcport: a$
+110 on error goto 210
+120 outbyte #0: a$
+130 goto 100
+1 rem **************************************************************************
+1 rem TCP/IP error handling routine
+1 rem **************************************************************************
+210 sleep 1
+220 if tcport <> 0 then
+230 close #tcport
+240 end if
+250 goto 80

@@ -1,0 +1,118 @@
+1 REM **************************************************************************
+1 REM Zebra Technologies ZBI Sample Program
+1 REM
+1 REM Professional programming services are available. Please contact
+1 REM ZBI-Experts@zebra.com for more information.
+1 REM
+1 REM This is an example of using arrays to store and use data within ZBI.
+1 REM **************************************************************************
+1 REM SUBROUTINES BELOW....
+2 REM
+3 REM **************************************************************************
+4 REM MAIN LOOP - DO NOT MODIFY
+5 REM **************************************************************************
+6 REM
+7 GOSUB PROGRAMINIT
+8 DO WHILE 1 = 1
+9 GOSUB PROCESSEVENTS
+10 GOSUB GETINPUT
+11 GOSUB WRITEOUTPUT
+12 GOSUB PROCESSDATA
+13 LOOP
+14 REM SUBROUTINES BELOW....
+15 REM
+16 REM **************************************************************************
+17 REM Program Init
+18 REM **************************************************************************
+19 REM
+20 SUB PROGRAMINIT
+21 LET INPORT = 1
+22 LET OUTPORT = 2
+23 LET ENDLINE$ = CHR$ ( 13 ) & CHR$ ( 10 )
+24 OPEN # INPORT : NAME "SER"
+25 OPEN # OUTPORT : NAME "ZPL"
+26 DECLARE STRING DATABASE$ ( 1 , 1 )
+27 LET COLUMNCOUNT = CSVLOAD ( DATABASE$ , "E:PRODUCTS.CSV" )
+28 LET OUTDATA$ = "TABLE WITH " & STR$ ( COLUMNCOUNT ) & " COLUMNS LOADED" & ENDLINE$
+29 RETURN
+30 REM
+31 REM **************************************************************************
+32 REM Process Events
+33 REM **************************************************************************
+34 REM
+35 SUB PROCESSEVENTS
+36 RETURN
+37 REM
+38 REM **************************************************************************
+39 REM Get Input
+40 REM
+41 REM Writes All Data from the serial port to the string INDATA$
+42 REM **************************************************************************
+43 REM
+44 SUB GETINPUT
+45 IF LEN ( INDATA$ ) < 5000 THEN
+46 LET INCOUNT = READ ( INPORT , A$ , 1024 )
+47 LET INDATA$ = INDATA$ & A$
+48 END IF
+49 RETURN
+50 REM
+51 REM **************************************************************************
+52 REM Write Output
+53 REM
+54 REM Writes All Data from the string OUTDATA$ to the ZPL Port
+55 REM **************************************************************************
+56 REM
+57 SUB WRITEOUTPUT
+58 LET OUTCOUNT = WRITE ( OUTPORT , OUTDATA$ , LEN ( OUTDATA$ ) )
+59 IF OUTCOUNT > 0 THEN
+60 LET OUTDATA$ ( 1 : OUTCOUNT ) = ""
+61 END IF
+62 RETURN
+63 REM
+64 REM **************************************************************************
+65 REM Process Data
+66 REM
+67 REM Parse the data in the string INDATA$ and write output to OUTDATA$
+68 REM **************************************************************************
+69 REM
+70 SUB PROCESSDATA
+71 IF LEN ( OUTDATA$ ) > 1000 THEN
+72 RETURN
+73 END IF
+74 REM REMOVE ALL LINE FEEDS
+75 DO
+76 LET LOC = POS ( INDATA$ , CHR$ ( 10 ) )
+77 LET INDATA$ ( LOC : LOC ) = ""
+78 LOOP WHILE LOC > 0
+79 REM COMPLETED LINE FEED REMOVAL
+80 LET LOC = POS ( INDATA$ , CHR$ ( 13 ) ) ! Line ends with CR
+81 IF LOC > 0 THEN
+82 LET INLINE$ = INDATA$ ( 1 : LOC - 1 )
+83 LET INDATA$ ( 1 : LOC ) = ""
+84 GOSUB FINDITEM
+85 IF ROW > 0 THEN
+86 LET OUTDATA$ = OUTDATA$ & "^XA^XFE:PRICELBL.ZPL^FS" & ENDLINE$
+87 LET OUTDATA$ = OUTDATA$ & "^FN1^FD" & DATABASE$ ( ROW , 1 ) & "^FS" & ENDLINE$
+88 LET OUTDATA$ = OUTDATA$ & "^FN2^FD" & DATABASE$ ( ROW , 2 ) & "^FS" & ENDLINE$
+89 LET OUTDATA$ = OUTDATA$ & "^FN3^FD" & DATABASE$ ( ROW , 3 ) & "^FS^XZ" & ENDLINE$
+90 END IF
+91 END IF
+92 RETURN
+93 REM
+94 REM **************************************************************************
+95 REM Find Item
+96 REM
+97 REM Search the first column of the database for the exact item requested
+98 REM **************************************************************************
+99 REM
+100 SUB FINDITEM
+101 LET ROW = 0
+102 LET EXPECTED$ = INLINE$
+103 DO
+104 LET FOUNDENTRY$ = ""
+105 LET ROW = FIND ( DATABASE$ , 1 , EXPECTED$ , ROW + 1 )
+106 IF ROW <> 0 THEN
+107 LET FOUNDENTRY$ = DATABASE$ ( ROW , 1 )
+108 END IF
+109 LOOP WHILE ( ROW <> 0 AND FOUNDENTRY$ <> EXPECTED$ )
+110 RETURN

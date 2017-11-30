@@ -1,0 +1,167 @@
+1 rem **************************************************************************
+1 rem Zebra Technologies ZBI Sample Program
+1 rem
+1 rem Professional programming services are available. Please contact
+1 rem ZBI-Experts@zebra.com for more information.
+1 rem 
+1 rem This is an example of converting a printer from 200 dpi (dots per inch
+1 rem to 300 dpi. This example covers only some of the ZPL commands that 
+1 rem could be affected by converting from 200 to 300 dpi printing.
+1 rem **************************************************************************
+1 rem open the ports for input and output
+1 rem **************************************************************************
+10 close #1
+20 close #2
+30 open #1 : name "PAR"
+40 open #2 : name "ZPL"
+1 rem **************************************************************************
+1 rem create an array with the search parameters
+1 rem **************************************************************************
+50 declare string find$(20)
+60 let find$(1) = "^FO"
+70 let find$(2) = "^A0"
+80 let find$(3) = "^GB"
+90 let find$(4) = "^XZ"
+100 let find$(5) = "^A@"
+110 let find$(6) = "^LL"
+120 let find$(7) = "^LH"
+130 let find$(8) = "FO"
+140 let find$(9) = "A0"
+150 let find$(10) = "GB"
+160 let find$(11) = "XZ"
+170 let find$(12) = "A@"
+180 let find$(14) = "LH"
+190 let find$(15) = "^BY"
+200 let find$(16) = "BY"
+210 let find$(17) = "^B3"
+220 let find$(18) = "B3"
+1 rem **************************************************************************
+1 rem search for the parameters
+1 rem **************************************************************************
+300 do
+310    let in$ = searchto$(1, find$, 2) 
+1 rem **************************************************************************
+1 rem once a parameter is found, determine how to handle it
+1 rem **************************************************************************
+320    if in$ = "^FO" or in$ = "FO" then
+330       gosub 520
+340    else if in$ = "^LH" or in$ = "LH" then
+350       gosub 520
+360    else if in$ = "^A0" or in$ = "A0" then
+370       gosub 700
+380    else if in$ = "^A@" or in$ = "A@" then
+390       gosub 700
+400    else if in$ = "^GB" or in$ = "GB" then
+410       gosub 1100
+420    else if in$ = "^LL" then
+430       gosub 1300
+440    else if in$ = "^BY" or in$ = "BY" then
+450       gosub 1400
+460    else if in$ = "^B3" or in$ = "B3" then
+470       gosub 1600
+480    else if in$ = "^XZ" then
+490       print #2: in$;
+500    end if
+510 loop
+1 rem **************************************************************************
+1 rem convert the ^FO and ^LH commands from 200 to 300 dpi
+1 rem **************************************************************************
+520 inbyte #1: a$
+530 let a = ord(a$) 
+540 if a >= 65 then 
+550    print #2: in$&a$;
+560    goto 660
+570 end if 
+580 let x$ = extract$(1, "", ", ")
+590 let x2$ = a$&x$ 
+600 let y$ = extract$(1, "", "^")
+610 let x = val(x2$)
+620 let y = val(y$)
+630 let x2 = (x/2)+x
+640 let y2 = (y/2)+y
+650 print #2: in$; x2; ","; y2; "^";
+660 return 
+1 rem **************************************************************************
+1 rem convert the ^A0 and ^A@ commands from 200 to 300 dpi
+1 rem **************************************************************************
+700 inbyte #1: a$ 
+710 let a = ord(a$) 
+720 let b = 0 
+730 let c = 0
+740 if a >= 65 then 
+750    print #2: in$&a$; ",";
+760    let b = 1 
+770 end if
+780 inbyte #1: a$ 
+790 let h$ = extract$(1, "", ",")
+800 if in$ = "^A@" or in$ = "A@" then
+810    let c = 1 
+820	   let w$ = extract$(1, "", ",")
+830    let m$ = extract$(1, "", "^") 
+840 else 	
+850    let w$ = extract$(1, "", "^")
+860 end if
+870 let h = val(h$)
+880 let w = val(w$) 
+900 let h2 = (h/2) + h
+910 let w2 = (w/2) + w
+920 if b = 1 then
+930    print #2: h2; ","; w2; 
+940 else	
+950    print #2: in$&"N,"; h2; ","; w2;
+960 end if 
+970 if c = 1 then 
+980    print #2: ","; m$; 
+990 end if
+1000 print #2: "^"; 
+1010 return 
+1 rem **************************************************************************
+1 rem convert the ^GB command from 200 to 300 dpi
+1 rem **************************************************************************
+1020 let w$ = extract$(1, "", ",") 
+1030 let h$ = extract$(1, "", ",")
+1040 let t$ = extract$(1, "", "^")
+1050 let h = val(h$)
+1060 let w = val(w$)
+1070 let t = val(t$)
+1080 let h2 = (h/2)+ h
+1090 let w2 = (w/2)+ w
+1100 let t2 = (t/2)+ t
+1110 print #2: in$; w2; ","; h2; ","; t2; "^";
+1120 return
+1 rem **************************************************************************
+1 rem convert the ^LL command from 200 to 300 dpi
+1 rem **************************************************************************
+1300 let l$ = extract$(1, "", "^")
+1310 let l = VAL(l$) 
+1320 let l2 = (l/2) + l
+1330 print #2: in$; l2; "^"; 
+1340 return
+1 rem **************************************************************************
+1 rem convert the ^BY command from 200 to 300 dpi
+1 rem **************************************************************************
+1400 inbyte #1: a$
+1410 let a = ord(a$) 
+1420 if a >= 48 and a <= 57 then 
+1460    let x$ = extract$(1, "", ", ")
+1470    let x2$ = a$&x$ 
+1480    let x = val(x2$) 
+1490    let x2 = (x/2) + x 
+1500       if x2 > 10 then
+1510       let x2 = 10
+1520       end if
+1530    print #2: in$; x2; ","; 
+1540 else
+1550    print #2: in$; a$;
+1560 end if 
+1570 return
+1 rem **************************************************************************
+1 rem convert the ^B3 command from 200 to 300 dpi
+1 rem **************************************************************************
+1600 let o$ = extract$(1, "", ", ") 
+1610 let e$ = extract$(1, "", ", ") 
+1620 let h$ = extract$(1, "", ", ") 
+1630 let h = val(h$) 
+1640 let h2 = (h/2) + h
+1650 print #2: in$; o$; ","; e$; ","; h2; ",";
+1660 return

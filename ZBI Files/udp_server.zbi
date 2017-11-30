@@ -1,0 +1,17 @@
+1 rem **************************************************************************
+1 rem Zebra Technologies ZBI Sample Program
+1 rem 
+1 rem Professional programming services are available. Please contact
+1 rem ZBI-Experts@zebra.com for more information.
+1 rem
+1 rem This is an example of using a socket to connect to a UDP server.
+1 rem **************************************************************************
+10 let UDPServer = serversocket("UDP",450)
+20 let c = accept(UDPServer, ip$)
+30 if (c > 0) then
+40 let x = read(c, instr$, 255)
+50 print ip$;" ";instr$
+55 close #c
+60 end if
+70 sleep 1
+80 goto 20

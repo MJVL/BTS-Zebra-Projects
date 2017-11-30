@@ -1,0 +1,17 @@
+1 rem **************************************************************************
+1 rem Zebra Technologies ZBI Sample Program
+1 rem 
+1 rem Professional programming services are available. Please contact
+1 rem ZBI-Experts@zebra.com for more information.
+1 rem
+1 rem This is an example of using a socket to connect to a UDP client.
+1 rem **************************************************************************
+10 let UDPClient = clientsocket("UDP","10.3.4.118", 450)
+20 if (UDPClient > 0) then
+30 print #UDPClient: "Hello "; i
+40 print "Hello "; i
+50 print #UDPClient: chr$(4);
+60 let i = i + 1
+70 goto 30
+80 end if
+90 print UDPClient

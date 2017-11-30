@@ -1,0 +1,96 @@
+1 REM **************************************************************************
+1 REM Zebra Technologies ZBI Sample Program
+1 REM
+1 REM Professional programming services are available. Please contact
+1 REM ZBI-Experts@zebra.com for more information.
+1 REM
+1 REM This example shows how to override the functionality of the feed key
+1 REM and use the front panel display to show a option list.
+1 REM **************************************************************************
+1 REM CLOSE ALL
+2 DECLARE STRING OPTIONS$ ( 5 )
+3 FOR I = 1 TO 5
+4 LET OPTIONS$ ( I ) = "Option " & STR$ ( I )
+5 NEXT I
+6 LET ZPLPORT = 1
+7 OPEN # ZPLPORT : NAME "ZPL"
+8 LET FEEDKEY = 3
+9 LET SELECTKEY = 10
+10 LET PLUSKEY = 6
+11 LET MINUSKEY = 7
+12 LET EXITKEY = 9
+13 LET TMP = REGISTEREVENT ( FEEDKEY , 0 , 1 )
+14 SUB NORMALLOOP
+15 DO WHILE 1 = 1
+16 LET EVT = HANDLEEVENT ( )
+17 IF EVT = FEEDKEY THEN
+18 LET INDEX = 1
+19 GOSUB REGISTERKEYS
+20 GOSUB SHOWMENU
+21 GOTO FEEDLOOP
+22 END IF
+23 SLEEP 1
+24 LOOP
+25 SUB FEEDLOOP
+26 DO WHILE 1 = 1
+27 LET EVT = HANDLEEVENT ( )
+28 IF EVT = FEEDKEY THEN
+29 GOSUB RELEASEKEYS
+30 GOSUB HIDEMENU
+31 GOTO NORMALLOOP
+32 ELSE IF EVT = SELECTKEY THEN
+33 GOSUB HANDLEOPTION
+34 ELSE IF EVT = PLUSKEY THEN
+35 LET INDEX = INDEX + 1
+36 IF INDEX > 5 THEN
+37 LET INDEX = 1
+38 END IF
+39 GOSUB SHOWMENU
+40 ELSE IF EVT = MINUSKEY THEN
+41 LET INDEX = INDEX - 1
+42 IF INDEX < 1 THEN
+43 LET INDEX = 5
+44 END IF
+45 GOSUB SHOWMENU
+46 ELSE IF EVT = EXITKEY THEN
+47 GOSUB RELEASEKEYS
+48 GOSUB HIDEMENU
+49 GOTO NORMALLOOP
+50 END IF
+51 SLEEP 1
+52 LOOP
+1 REM **************************************************************************
+1 REM         SUBROUTINE SHOWMENU
+1 REM **************************************************************************
+54 SUB SHOWMENU
+55 LET LINE1$ = "FEED DISPLAY"
+56 LET LINE2$ = OPTIONS$ ( INDEX )
+57 GOSUB UPDATEDISPLAY
+58 RETURN
+1 REM **************************************************************************
+1 REM         SUBROUTINE HIDEMENU
+1 REM **************************************************************************
+60 SUB HIDEMENU
+61 LET LINE1$ = ""
+62 LET LINE2$ = ""
+63 GOSUB UPDATEDISPLAY
+64 RETURN
+65 SUB UPDATEDISPLAY
+66 LET A = SETVAR ( "device.frontpanel.line1" , LINE1$ )
+67 LET A = SETVAR ( "device.frontpanel.line2" , LINE2$ )
+68 RETURN
+69 SUB REGISTERKEYS
+70 LET TMP = REGISTEREVENT ( SELECTKEY , 0 , 1 )
+71 LET TMP = REGISTEREVENT ( PLUSKEY , 0 , 1 )
+72 LET TMP = REGISTEREVENT ( MINUSKEY , 0 , 1 )
+73 LET TMP = REGISTEREVENT ( EXITKEY , 0 , 1 )
+74 RETURN
+75 SUB RELEASEKEYS
+76 LET TMP = UNREGISTEREVENT ( SELECTKEY )
+77 LET TMP = UNREGISTEREVENT ( PLUSKEY )
+78 LET TMP = UNREGISTEREVENT ( MINUSKEY )
+79 LET TMP = UNREGISTEREVENT ( EXITKEY )
+80 RETURN
+81 SUB HANDLEOPTION
+82 PRINT # ZPLPORT : "^XA^FO100,100^A0N,100,100^FD" ; OPTIONS$ ( INDEX ) ; "^XZ"
+83 RETURN
